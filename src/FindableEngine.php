@@ -47,11 +47,6 @@ class FindableEngine
 
     protected function runSearch()
     {
-        if (!$this->elasticsearchService->isAvailable()) {
-            // Inform the user that Elasticsearch is currently not available
-            return response()->json(['error' => 'Elasticsearch service is currently not available. Please try again later.'], 503);
-        }
-
         $this->setParams();
         $this->setResults($this->elasticsearchService->getClient()->search($this->params));
         $this->setRaw();

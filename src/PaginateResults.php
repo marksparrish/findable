@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Elastic;
+namespace Findable;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 
