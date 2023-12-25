@@ -37,15 +37,7 @@ class FindableEngine
         $this->elasticsearchService = app('elasticsearch.client');
     }
 
-    // provide a basic search method
-    public function setMustMatchAll()
-    {
-        $this->setMustQuery('match_all', ['boost' => 1]);
-
-        return $this;
-    }
-
-    protected function runSearch()
+    protected function search()
     {
         $this->setParams();
         $this->setResults($this->elasticsearchService->search($this->params));
@@ -58,7 +50,7 @@ class FindableEngine
     public function paginate()
     {
         $this->setPage(Paginator::resolveCurrentPage($this->pageName));
-        $this->runSearch();
+        $this->search();
 
         $paginator = new PaginateResults($this->models, $this->total_hits, $this->getSize(), $this->getPage());
 
@@ -85,38 +77,15 @@ class FindableEngine
         return $paginator;
     }
 
-    public function all()
-    {
-        ini_set('memory_limit', '256M');
-        // $client is Elasticsearch\Client instance
-        if (!$this->elasticsearchService->isAvailable()) {
-            // Inform the user that Elasticsearch is currently not available
-            return response()->json(['error' => 'Elasticsearch service is currently not available. Please try again later.'], 503);
-        }
-        $this->setScroll(true);
-        $this->setSize(5000);
-        $this->setParams();
-        $pages = new SearchResponseIterator($this->elasticsearchService->getClient(), $this->params);
-        $hits = new SearchHitIterator($pages);
-
-        $this->models = collect([]);
-        foreach ($hits as $hit) {
-            $model = new $this->model();
-            $model->fill($hit['_source']);
-            $this->models->push($model);
-        }
-        return $this->models;
-    }
-
     public function get()
     {
-        $this->runSearch();
+        $this->search();
         return $this->models;
     }
 
     public function first()
     {
-        $this->runSearch();
+        $this->search();
         return $this->models->first();
     }
 }
