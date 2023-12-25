@@ -7,6 +7,6 @@ trait Findable
     public static function finder()
     {
         $modelInstance = app(static::class);
-        return new FindableServiceProvider($modelInstance);
+        return new FindableEngine($modelInstance);
     }
 }
