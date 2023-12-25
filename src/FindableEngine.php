@@ -48,7 +48,7 @@ class FindableEngine
     protected function runSearch()
     {
         $this->setParams();
-        $this->setResults($this->elasticsearchService->getClient()->search($this->params));
+        $this->setResults($this->elasticsearchService->search($this->params));
         $this->setRaw();
         $this->setTotalHits();
         $this->setModels();
