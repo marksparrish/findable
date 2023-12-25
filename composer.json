@@ -1,0 +1,23 @@
+{
+    "name": "findable",
+    "description": "This is a package for Laravel that will allow you to use Elasticsearch as database for your models.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark Parrish",
+            "email": "mark@pipcommunications.com"
+        }
+    ],
+    "require": {
+        "elasticsearch/elasticsearch": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PIP\\Findable\\": "src/"
+        }
+    }
+}
