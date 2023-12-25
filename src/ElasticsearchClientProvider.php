@@ -10,23 +10,18 @@ class ElasticsearchClientProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('elasticsearch.client', function ($app) {
-            return $this->createClient();
+            $scheme = config('findable.scheme');
+            $host = config('findable.host');
+            $port = config('findable.port');
+            $user = config('findable.user');
+            $password = config('findable.password');
+            $ca = config('findable.ca');
+
+            return ClientBuilder::create()
+                ->setHosts(["{$scheme}://{$host}:{$port}"])
+                ->setBasicAuthentication($user, $password)
+                ->setCABundle($ca)
+                ->build();
         });
-    }
-
-    private function createClient()
-    {
-        $scheme = config('findable.elastic.scheme');
-        $host = config('findable.elastic.host');
-        $port = config('findable.elastic.port');
-        $user = config('findable.elastic.user');
-        $password = config('findable.elastic.password');
-        $ca = config('findable.elastic.ca');
-
-        return ClientBuilder::create()
-            ->setHosts(["{$scheme}://{$host}:{$port}"])
-            ->setBasicAuthentication($user, $password)
-            ->setCABundle($ca)
-            ->build();
     }
 }
