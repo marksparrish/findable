@@ -2,12 +2,12 @@
 
 namespace Findable;
 
-use Findable\FindableServiceProvider as Client;
 use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
 use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
 use Illuminate\Support\Collection;
 use App\Elastic\PaginateResults;
 use Illuminate\Pagination\Paginator;
+
 use App\Elastic\Traits\FindableGetterTrait;
 use App\Elastic\Traits\FindableSetterTrait;
 use App\Elastic\Traits\FindableParamsTrait;
@@ -34,7 +34,7 @@ class FindableEngine
     public function __construct($model)
     {
         $this->model = $model;
-        $this->elasticsearchService = app(Client::class);
+        $this->elasticsearchService = app('elasticsearch.client');
     }
 
     // provide a basic search method
