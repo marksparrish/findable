@@ -5,13 +5,13 @@ namespace Findable;
 use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
 use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
 use Illuminate\Support\Collection;
-use App\Elastic\PaginateResults;
+use Findable\PaginateResults;
 use Illuminate\Pagination\Paginator;
 
-use App\Elastic\Traits\FindableGetterTrait;
-use App\Elastic\Traits\FindableSetterTrait;
-use App\Elastic\Traits\FindableParamsTrait;
-use App\Elastic\Traits\FindableAggregationsFormatterTrait;
+use Findable\Traits\FindableGetterTrait;
+use Findable\Traits\FindableSetterTrait;
+use Findable\Traits\FindableParamsTrait;
+use Findable\Traits\FindableAggregationsFormatterTrait;
 
 class FindableEngine
 {
