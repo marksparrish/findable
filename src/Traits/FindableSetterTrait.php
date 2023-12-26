@@ -156,10 +156,8 @@ trait FindableSetterTrait
     {
         $queries = is_array($queries) ? $queries : [$queries];
         $this->aggs = $this->aggs ?: collect([]);
-        $this->aggregationFormatter = $this->aggregationFormatter ?: collect([]);
         foreach ($queries as $query) {
             $this->aggs->put(array_key_first($query), $query[(array_key_first($query))]);
-            $this->aggregationFormatter->put(array_key_first($query), $query['formatter']);
         }
     }
 

@@ -72,13 +72,6 @@ trait FindableParamsTrait
     private ?Collection $aggs = null;
 
     /**
-     * Aggregations on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $aggregationFormatter = null;
-
-    /**
      * Sort on Index for the models.
      *
      * @var array
