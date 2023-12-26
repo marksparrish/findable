@@ -87,20 +87,16 @@ trait FindableSetterTrait
     //  * @param  mixed  $query
     //  * @return void
     //  */
-    public function setMustQuery($query)
+    public function setMustQuery($queries)
     {
         // make query into an array if it is not already
-        $query = is_array($query) ? $query : [$query];
+        $queries = is_array($queries) ? $queries : [$queries];
         $this->must_query = $this->must_query ?: collect([]);
-        foreach ($query as $key => $value) {
+        foreach ($queries as $query) {
             $this->must_query->push([
-                $key => $value
+                array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
-        // $this->must_query = $this->must_query ?: collect([]);
-        // $this->must_query->push([
-        //     array_key_first($query) => $query[(array_key_first($query))]
-        // ]);
     }
 
     /**
