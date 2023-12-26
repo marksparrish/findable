@@ -89,10 +89,18 @@ trait FindableSetterTrait
     //  */
     public function setMustQuery($query)
     {
+        // make query into an array if it is not already
+        $query = is_array($query) ? $query : [$query];
         $this->must_query = $this->must_query ?: collect([]);
-        $this->must_query->push([
-            array_key_first($query) => $query[(array_key_first($query))]
-        ]);
+        foreach ($query as $key => $value) {
+            $this->must_query->push([
+                $key => $value
+            ]);
+        }
+        // $this->must_query = $this->must_query ?: collect([]);
+        // $this->must_query->push([
+        //     array_key_first($query) => $query[(array_key_first($query))]
+        // ]);
     }
 
     /**
