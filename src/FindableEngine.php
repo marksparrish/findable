@@ -37,7 +37,10 @@ class FindableEngine
         $this->elasticsearchService = app('elasticsearch.client');
     }
 
-    public function search()
+    // this method sets all of the search results
+    // to the $results property
+    // it is a private method and is called by the paginate() and get() methods
+    private function search()
     {
         $this->setParams();
         $this->setResults($this->elasticsearchService->search($this->params));

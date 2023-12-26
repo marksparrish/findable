@@ -83,25 +83,16 @@ trait FindableSetterTrait
     }
 
     // /**
-    //  * @param  mixed  $key
-    //  * @param  mixed  $array
+    // sets a must query in the search query
+    //  * @param  mixed  $query
     //  * @return void
     //  */
-    // public function setMustQuery($key, $array)
-    // {
-    //     $this->must_query = $this->must_query ?: collect([]);
-    //     $this->must_query->push([$key => $array]);
-    // }
-
     public function setMustQuery($query)
     {
-        if (!isset($this->query['bool']['must'])) {
-            $this->query['bool']['must'] = [];
-        }
-
-        $this->query['bool']['must'][] = $query;
-
-        return $this;
+        $this->must_query = $this->must_query ?: collect([]);
+        $this->must_query->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);
     }
 
     /**
@@ -109,10 +100,12 @@ trait FindableSetterTrait
      * @param  mixed  $array
      * @return void
      */
-    public function setShouldQuery($key, $array)
+    public function setShouldQuery($query)
     {
         $this->should_query = $this->should_query ?: collect([]);
-        $this->should_query->push([$key => $array]);
+        $this->should_query->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);
     }
 
     /**
@@ -120,10 +113,12 @@ trait FindableSetterTrait
      * @param  mixed  $array
      * @return void
      */
-    public function setMustNotQuery($key, $array)
+    public function setMustNotQuery($query)
     {
         $this->must_not_query = $this->must_not_query ?: collect([]);
-        $this->must_not_query->push([$key => $array]);
+        $this->must_not_query->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);
     }
 
     /**
@@ -131,11 +126,12 @@ trait FindableSetterTrait
      * @param  mixed  $array
      * @return void
      */
-    public function setFilter($key, $array)
+    public function setFilter($query)
     {
         $this->filter = $this->filter ?: collect([]);
-
-        $this->filter->push([$key => $array]);
+        $this->filter->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);
     }
 
     /**
@@ -143,10 +139,12 @@ trait FindableSetterTrait
      * @param  mixed  $array
      * @return void
      */
-    public function setAggs($key, $array)
+    public function setAggs($query)
     {
         $this->aggs = $this->aggs ?: collect([]);
-        $this->aggs->put($key, $array);
+        $this->aggs->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);;
     }
 
     /**
@@ -154,10 +152,12 @@ trait FindableSetterTrait
      * @param  mixed  $array
      * @return void
      */
-    public function setSort($key, $array)
+    public function setSort($query)
     {
         $this->sort = $this->sort ?: collect([]);
-        $this->sort->put($key, $array);
+        $this->sort->push([
+            array_key_first($query) => $query[(array_key_first($query))]
+        ]);
     }
 
     public function setRescore($array)
