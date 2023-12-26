@@ -11,11 +11,10 @@ use Illuminate\Pagination\Paginator;
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
 use Findable\Traits\FindableParamsTrait;
-use Findable\Traits\FindableAggregationsFormatterTrait;
 
 class FindableEngine
 {
-    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait, FindableAggregationsFormatterTrait;
+    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait;
 
     public $model;
     private $elasticsearchService;
