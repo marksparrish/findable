@@ -82,15 +82,26 @@ trait FindableSetterTrait
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     * @return void
-     */
-    public function setMustQuery($key, $array)
+    // /**
+    //  * @param  mixed  $key
+    //  * @param  mixed  $array
+    //  * @return void
+    //  */
+    // public function setMustQuery($key, $array)
+    // {
+    //     $this->must_query = $this->must_query ?: collect([]);
+    //     $this->must_query->push([$key => $array]);
+    // }
+
+    public function setMustQuery($query)
     {
-        $this->must_query = $this->must_query ?: collect([]);
-        $this->must_query->push([$key => $array]);
+        if (!isset($this->query['bool']['must'])) {
+            $this->query['bool']['must'] = [];
+        }
+
+        $this->query['bool']['must'][] = $query;
+
+        return $this;
     }
 
     /**
