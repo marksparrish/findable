@@ -63,14 +63,19 @@ class FindableEngine
             $formatedAggregations = [];
 
             foreach ($this->aggregations as $key => $value) {
-                if (method_exists($this, 'format' . $key)) {
-                    $formatedAggregations[$key] = $this->{'format' . $key}($value);
+                // Check if there is a formatting function for the current aggregation key
+                if (isset($this->aggregationFormatter[$key]) && is_callable($this->aggregationFormatter[$key])) {
+                    // Execute the anonymous function and store the result
+                    $formatedAggregations[$key] = $this->aggregationFormatter[$key]($value);
                 } else {
+                    // If no specific formatter is found, use the value as is
                     $formatedAggregations[$key] = $value;
                 }
             }
+
             $paginator->aggregations = $formatedAggregations;
         }
+
         if ($this->raw) {
             $paginator->raw = $this->raw;
         }
