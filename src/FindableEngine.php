@@ -56,25 +56,10 @@ class FindableEngine
 
         $paginator = new PaginateResults($this->models, $this->total_hits, $this->getSize(), $this->getPage());
 
-        // need to see if aggregations are set and if
-        // so then add them to the query
         if ($this->aggregations) {
-            $formatedAggregations = [];
-
             foreach ($this->aggregations as $key => $value) {
-                // Check if there is a formatting function for the current aggregation key
-                if (isset($this->aggregationFormatter[$key])) {
-                    // Execute the anonymous function and store the result
-                    // dd($this->aggregationFormatter[$key]);
-                    $formatedAggregations[$key] = $this->aggregationFormatter[$key]($value);
-                    dd($formatedAggregations);
-                } else {
-                    // If no specific formatter is found, use the value as is
-                    $formatedAggregations[$key] = $value;
-                }
+                $paginator->aggregations[$key] = $value;
             }
-
-            $paginator->aggregations = $formatedAggregations;
         }
 
         if ($this->raw) {
