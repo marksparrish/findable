@@ -1,8 +1,8 @@
 <?php
 
-namespace Findable\Traits;
+namespace Findable\ModelTraits;
 
-trait FindableAggregationsFormatterTrait
+trait FindableModelAggregationsFormatterTrait
 {
     public function formatMultiLevelBucketCounts($buckets)
     {
