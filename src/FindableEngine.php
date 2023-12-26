@@ -17,7 +17,7 @@ class FindableEngine
 {
     use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait, FindableAggregationsFormatterTrait;
 
-    private $model;
+    public $model;
     private $elasticsearchService;
 
     private $page = 1;
@@ -37,7 +37,7 @@ class FindableEngine
         $this->elasticsearchService = app('elasticsearch.client');
     }
 
-    protected function search()
+    public function search()
     {
         $this->setParams();
         $this->setResults($this->elasticsearchService->search($this->params));
