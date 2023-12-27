@@ -1,8 +1,8 @@
 <?php
 
-namespace Findable\FormatHelpers;
+namespace Findable\Helpers;
 
-trait AggregationFormatterTrait
+trait AggregationFormatHelperTrait
 {
     public function formatMultiLevelBucketCounts($buckets)
     {
