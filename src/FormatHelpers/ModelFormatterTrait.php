@@ -1,6 +1,6 @@
 <?php
 
-namespace Findable\ModelTraits;
+namespace Findable\FormatHelpers;
 
 trait ModelFormatterTrait
 {
