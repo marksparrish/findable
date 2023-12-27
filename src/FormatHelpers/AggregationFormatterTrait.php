@@ -2,7 +2,7 @@
 
 namespace Findable\FormatHelpers;
 
-trait ModelFormatterTrait
+trait AggregationFormatterTrait
 {
     public function formatMultiLevelBucketCounts($buckets)
     {
