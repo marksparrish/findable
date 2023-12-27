@@ -97,6 +97,7 @@ trait FindableSetterTrait
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
+        return $this;
     }
 
     /**
@@ -113,6 +114,7 @@ trait FindableSetterTrait
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
+        return $this;
     }
 
     /**
@@ -129,6 +131,7 @@ trait FindableSetterTrait
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
+        return $this;
     }
 
     /**
@@ -145,6 +148,7 @@ trait FindableSetterTrait
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
+        return $this;
     }
 
     /**
@@ -159,6 +163,7 @@ trait FindableSetterTrait
         foreach ($queries as $query) {
             $this->aggs->put(array_key_first($query), $query[(array_key_first($query))]);
         }
+        return $this;
     }
 
     /**
@@ -175,12 +180,14 @@ trait FindableSetterTrait
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
+        return $this;
     }
 
     public function setRescore($array)
     {
         $this->rescore = $this->rescore ?: collect([]);
         $this->rescore->push($array);
+        return $this;
     }
 
     private function setResults($results)
