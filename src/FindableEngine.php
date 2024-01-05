@@ -50,8 +50,12 @@ class FindableEngine
 
     public function paginate($perPage = 15)
     {
+        $this->setPage(LengthAwarePaginator::resolveCurrentPage($this->pageName));
         $this->setSize($perPage);
+        $this->setFrom(($this->getPage() - 1) * $perPage);
+
         $this->search();
+
         return new FindablePaginationClass(
             $this->models,
             $this->total_hits,
