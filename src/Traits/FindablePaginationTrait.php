@@ -7,17 +7,17 @@ use Findable\PaginateResults;
 
 trait FindablePaginationTrait
 {
-    private $page = 1;
+    private $paginationPage = 1;
     private $pageName = 'page';
 
-    public function setPage($page)
+    public function setPaginationPage($page)
     {
-        $this->page = $page;
+        $this->paginationPage = $page;
     }
 
-    public function getPage()
+    public function getPaginationPage()
     {
-        return $this->page;
+        return $this->paginationPage;
     }
 
     public function resolveCurrentPage()
@@ -27,7 +27,7 @@ trait FindablePaginationTrait
 
     public function createPaginator($items, $total, $perPage)
     {
-        return new PaginateResults($items, $total, $perPage, $this->getPage());
+        return new PaginateResults($items, $total, $perPage, $this->getPaginationPage());
     }
 
     // ... other pagination methods ...

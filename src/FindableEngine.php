@@ -15,6 +15,7 @@ class FindableEngine
 {
     use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait, FindablePaginationTrait;
 
+
     public $model;
     private $elasticsearchService;
 
@@ -50,7 +51,7 @@ class FindableEngine
 
     public function paginate()
     {
-        $this->setPage($this->resolveCurrentPage());
+        $this->setPaginationPage($this->resolveCurrentPage());
         $this->search();
 
         $paginator = $this->createPaginator($this->models, $this->total_hits, $this->getSize());
