@@ -2,8 +2,6 @@
 
 namespace Findable;
 
-use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
-use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
 use Illuminate\Support\Collection;
 use Findable\PaginateResults;
 use Illuminate\Pagination\Paginator;
@@ -11,10 +9,11 @@ use Illuminate\Pagination\Paginator;
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
 use Findable\Traits\FindableParamsTrait;
+use Findable\Traits\FindablePaginationTrait;
 
 class FindableEngine
 {
-    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait;
+    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait, FindablePaginationTrait;
 
     public $model;
     private $elasticsearchService;
@@ -51,10 +50,10 @@ class FindableEngine
 
     public function paginate()
     {
-        $this->setPage(Paginator::resolveCurrentPage($this->pageName));
+        $this->setPage($this->resolveCurrentPage());
         $this->search();
 
-        $paginator = new PaginateResults($this->models, $this->total_hits, $this->getSize(), $this->getPage());
+        $paginator = $this->createPaginator($this->models, $this->total_hits, $this->getSize());
 
         if ($this->aggregations) {
             foreach ($this->aggregations as $key => $value) {
