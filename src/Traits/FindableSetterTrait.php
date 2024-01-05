@@ -226,7 +226,7 @@ trait FindableSetterTrait
     private function setAggregations()
     {
         if (!isset($this->raw['aggregations'])) {
-            $this->aggregations = collect([]);
+            $this->aggregations = null;
         } else {
             $this->aggregations = collect($this->raw['aggregations']);
         }

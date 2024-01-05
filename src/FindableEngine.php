@@ -3,17 +3,14 @@
 namespace Findable;
 
 use Illuminate\Support\Collection;
-use Findable\PaginateResults;
-use Illuminate\Pagination\Paginator;
-
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
 use Findable\Traits\FindableParamsTrait;
-use Findable\Traits\FindablePaginationTrait;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FindableEngine
 {
-    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait, FindablePaginationTrait;
+    use FindableGetterTrait, FindableSetterTrait, FindableParamsTrait;
 
 
     public $model;
@@ -47,36 +44,47 @@ class FindableEngine
         $this->setTotalHits();
         $this->setModels();
         $this->setAggregations();
+
+        return $this;
     }
 
-    public function paginate()
+    public function paginate($perPage = 15)
     {
-        $this->setPaginationPage($this->resolveCurrentPage());
-        $this->search();
-
-        $paginator = $this->createPaginator($this->models, $this->total_hits, $this->getSize());
-
-        if ($this->aggregations) {
-            foreach ($this->aggregations as $key => $value) {
-                $paginator->aggregations[$key] = $value;
-            }
-        }
-
-        if ($this->raw) {
-            $paginator->raw = $this->raw;
-        }
-        if ($this->params) {
-            $paginator->params = $this->params;
-        }
-        return $paginator;
+        return new FindablePaginationClass(
+            $this->models,
+            $this->total_hits,
+            $perPage,
+            LengthAwarePaginator::resolveCurrentPage(),
+        );
     }
+    //     $this->setPage(LengthAwarePaginator::resolveCurrentPage($this->pageName));
+    //     $this->search();
 
+    //     $paginator = $this->createPaginator($this->models, $this->total_hits, $this->getSize());
+
+    //     if ($this->aggregations) {
+    //         foreach ($this->aggregations as $key => $value) {
+    //             $paginator->aggregations[$key] = $value;
+    //         }
+    //     }
+
+    //     if ($this->raw) {
+    //         $paginator->raw = $this->raw;
+    //     }
+    //     if ($this->params) {
+    //         $paginator->params = $this->params;
+    //     }
+    //     return $paginator;
+    // }
+
+    // returns the search results but just the models
     public function get()
     {
         $this->search();
         return $this->models;
     }
 
+    // returns the first model in the search results
     public function first()
     {
         $this->search();
