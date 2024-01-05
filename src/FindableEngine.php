@@ -50,6 +50,7 @@ class FindableEngine
 
     public function paginate($perPage = 15)
     {
+        $this->search();
         return new FindablePaginationClass(
             $this->models,
             $this->total_hits,
