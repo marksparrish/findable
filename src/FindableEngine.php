@@ -41,8 +41,8 @@ class FindableEngine
         $this->setResults($this->elasticsearchService->search($this->params));
 
 
+        $this->setRaw(); // this method sets the raw results and must be first
         $this->setModels();  // this method sets the models
-        $this->setRaw(); //
         $this->setTotalHits(); // this method sets the total hits
         $this->setAggregations(); // this method sets the aggregations
     }
