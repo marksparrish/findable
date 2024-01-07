@@ -76,7 +76,7 @@ class FindableEngine
         // if ($this->params) {
         //     $paginator->params = $this->params;
         // }
-        return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
+        $paginator = Container::getInstance()->makeWith(LengthAwarePaginator::class, [
             'items' => $this->models,
             'total' => $this->total_hits,
             'perPage' => $perPage,
@@ -89,10 +89,10 @@ class FindableEngine
                 'params' => $this->params ?? null,
             ],
         ]);
-        // return $paginator
-        //     ->setAggregations($this->aggregations ?? [])
-        //     ->setRaw($this->raw ?? null)
-        //     ->setParams($this->params ?? null);
+        return $paginator
+            ->setAggregations($this->aggregations ?? [])
+            ->setRaw($this->raw ?? null)
+            ->setParams($this->params ?? null);
     }
 
     // returns the search results but just the models
