@@ -60,12 +60,31 @@ class FindableEngine
             $this->total_hits,
             $this->getSize(),
             LengthAwarePaginator::resolveCurrentPage($pageName),
+            $pageName,
         );
 
-        return $paginator
-            ->setAggregations($this->aggregations ?? [])
-            ->setRaw($this->raw ?? null)
-            ->setParams($this->params ?? null);
+        // need to see if aggregations are set and if
+        // so then add them to the query
+        if ($this->aggregations) {
+            $formatedAggregations = [];
+
+            foreach ($this->aggregations as $key => $value) {
+                if (method_exists($this, 'format' . $key)) {
+                    $formatedAggregations[$key] = $this->{'format' . $key}($value);
+                } else {
+                    $formatedAggregations[$key] = $value;
+                }
+            }
+            $paginator->aggregations = $formatedAggregations;
+        }
+        if ($this->raw) {
+            $paginator->raw = $this->raw;
+        }
+        if ($this->params) {
+            $paginator->params = $this->params;
+        }
+
+        return $paginator;
     }
 
     // returns the search results but just the models
