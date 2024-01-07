@@ -7,8 +7,6 @@ use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
 use Findable\Traits\FindableParamsTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Container\Container;
 
 class FindableEngine
 {
@@ -57,35 +55,13 @@ class FindableEngine
 
         $this->performSearch();
 
-        // $paginator = new FindablePaginationClass(
-        //     $this->models,
-        //     $this->total_hits,
-        //     $this->getSize(),
-        //     LengthAwarePaginator::resolveCurrentPage($pageName),
-        // );
+        $paginator = new FindablePaginationClass(
+            $this->models,
+            $this->total_hits,
+            $this->getSize(),
+            LengthAwarePaginator::resolveCurrentPage($pageName),
+        );
 
-        // if ($this->aggregations) {
-        //     foreach ($this->aggregations as $key => $value) {
-        //         $paginator->aggregations[$key] = $value;
-        //     }
-        // }
-
-        // if ($this->raw) {
-        //     $paginator->raw = $this->raw;
-        // }
-        // if ($this->params) {
-        //     $paginator->params = $this->params;
-        // }
-        $paginator = Container::getInstance()->makeWith(LengthAwarePaginator::class, [
-            'items' => $this->models,
-            'total' => $this->total_hits,
-            'perPage' => $perPage,
-            'currentPage' => $page,
-            'options' => [
-                'path' => Paginator::resolveCurrentPath(),
-                'pageName' => $pageName,
-            ],
-        ]);
         return $paginator
             ->setAggregations($this->aggregations ?? [])
             ->setRaw($this->raw ?? null)
