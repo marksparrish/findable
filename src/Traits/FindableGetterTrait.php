@@ -45,12 +45,7 @@ trait FindableGetterTrait
 
     private function getFrom()
     {
-        if ($this->from) {
-            return $this->from;
-        } else {
-            $page = $this->getPage() ?: 1;
-            return ($page - 1) * $this->size;
-        }
+        return $this->from;
     }
 
     private function getTrackTotalHits()
