@@ -7,6 +7,8 @@ use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
 use Findable\Traits\FindableParamsTrait;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Container\Container;
 
 class FindableEngine
 {
@@ -15,10 +17,6 @@ class FindableEngine
 
     public $model;
     private $elasticsearchService;
-
-    private $page = 1;
-    private $pageName = 'page';
-
 
     private $results;
     private $raw;
@@ -36,64 +34,78 @@ class FindableEngine
     // this method sets all of the search results
     // to the $results property
     // it is a private method and is called by the paginate() and get() methods
-    private function search()
+    private function performSearch()
     {
+        // buiid the params array
         $this->setParams();
-        $this->setResults($this->elasticsearchService->search($this->params));
-        $this->setRaw();
-        $this->setTotalHits();
-        $this->setModels();
-        $this->setAggregations();
 
-        return $this;
+        // perform the search using the elasticsearch service with the params array
+        $this->setResults($this->elasticsearchService->search($this->params));
+
+
+        $this->setModels();  // this method sets the models
+        $this->setTotalHits(); // this method sets the total hits
+        $this->setAggregations(); // this method sets the aggregations
+        $this->setRaw(); //
     }
 
-    public function paginate($perPage = 15)
+    public function paginate($perPage = 15, $pageName = 'page', $page = null, $options = [])
     {
-        $this->setPage(LengthAwarePaginator::resolveCurrentPage($this->pageName));
+        $this->setPage(LengthAwarePaginator::resolveCurrentPage($pageName));
         $this->setSize($perPage);
         $this->setFrom(($this->getPage() - 1) * $perPage);
 
-        $this->search();
+        $this->performSearch();
 
-        return new FindablePaginationClass(
-            $this->models,
-            $this->total_hits,
-            $this->getSize(),
-            LengthAwarePaginator::resolveCurrentPage(),
-        );
+        // $paginator = new FindablePaginationClass(
+        //     $this->models,
+        //     $this->total_hits,
+        //     $this->getSize(),
+        //     LengthAwarePaginator::resolveCurrentPage($pageName),
+        // );
+
+        // if ($this->aggregations) {
+        //     foreach ($this->aggregations as $key => $value) {
+        //         $paginator->aggregations[$key] = $value;
+        //     }
+        // }
+
+        // if ($this->raw) {
+        //     $paginator->raw = $this->raw;
+        // }
+        // if ($this->params) {
+        //     $paginator->params = $this->params;
+        // }
+        return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
+            'items' => $this->models,
+            'total' => $this->total_hits,
+            'perPage' => $perPage,
+            'currentPage' => $page,
+            'options' => [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+                'aggregations' => $this->aggregations ?? null,
+                'raw' => $this->raw ?? null,
+                'params' => $this->params ?? null,
+            ],
+        ]);
+        // return $paginator
+        //     ->setAggregations($this->aggregations ?? [])
+        //     ->setRaw($this->raw ?? null)
+        //     ->setParams($this->params ?? null);
     }
-    //     $this->setPage(LengthAwarePaginator::resolveCurrentPage($this->pageName));
-    //     $this->search();
-
-    //     $paginator = $this->createPaginator($this->models, $this->total_hits, $this->getSize());
-
-    //     if ($this->aggregations) {
-    //         foreach ($this->aggregations as $key => $value) {
-    //             $paginator->aggregations[$key] = $value;
-    //         }
-    //     }
-
-    //     if ($this->raw) {
-    //         $paginator->raw = $this->raw;
-    //     }
-    //     if ($this->params) {
-    //         $paginator->params = $this->params;
-    //     }
-    //     return $paginator;
-    // }
 
     // returns the search results but just the models
     public function get()
     {
-        $this->search();
+        $this->performSearch();
         return $this->models;
     }
 
     // returns the first model in the search results
     public function first()
     {
-        $this->search();
+        $this->performSearch();
         return $this->models->first();
     }
 }
