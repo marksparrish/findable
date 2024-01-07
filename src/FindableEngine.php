@@ -84,9 +84,6 @@ class FindableEngine
             'options' => [
                 'path' => Paginator::resolveCurrentPath(),
                 'pageName' => $pageName,
-                'aggregations' => $this->aggregations ?? null,
-                'raw' => $this->raw ?? null,
-                'params' => $this->params ?? null,
             ],
         ]);
         return $paginator

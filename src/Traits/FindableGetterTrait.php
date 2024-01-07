@@ -40,7 +40,7 @@ trait FindableGetterTrait
 
     private function getPage()
     {
-        return request()->query(data_get($this->pageName, 'page.as', 'page'), $this->page);
+        return $this->page;
     }
 
     private function getFrom()
