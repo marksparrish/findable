@@ -42,9 +42,9 @@ class FindableEngine
 
 
         $this->setModels();  // this method sets the models
+        $this->setRaw(); //
         $this->setTotalHits(); // this method sets the total hits
         $this->setAggregations(); // this method sets the aggregations
-        $this->setRaw(); //
     }
 
     public function paginate($perPage = 15, $pageName = 'page', $page = null, $options = [])
