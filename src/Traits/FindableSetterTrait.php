@@ -142,9 +142,9 @@ trait FindableSetterTrait
     public function setFilter($queries)
     {
         $queries = is_array($queries) ? $queries : [$queries];
-        $this->filters = $this->filters ?: collect([]);
+        $this->filter = $this->filter ?: collect([]);
         foreach ($queries as $query) {
-            $this->filters->push([
+            $this->filter->push([
                 array_key_first($query) => $query[(array_key_first($query))]
             ]);
         }
