@@ -157,6 +157,12 @@ trait FindableSetterTrait
         return $this;
     }
 
+    public function setCollapse($field)
+    {
+        $this->collapse = $field;
+        return $this;
+    }
+
     public function setRescore($array)
     {
         $this->rescore = $this->rescore ?: new Collection();
