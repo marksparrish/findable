@@ -97,4 +97,11 @@ trait FindableGetterTrait
     {
         return $this->rescore->toArray();
     }
+
+    private function getCollapse()
+    {
+        return [
+            'field' => $this->collapse
+        ];
+    }
 }

@@ -91,6 +91,8 @@ trait FindableParamsTrait
      */
     private ?array $script = null;
 
+    private $collapse = null;
+
     /** @return array  */
     private function setParams()
     {
@@ -142,6 +144,11 @@ trait FindableParamsTrait
         if ($this->rescore) {
             $params['body']['rescore'] = $this->getRescore();
         }
+
+        if ($this->collapse) {
+            $params['body']['collapse'] = $this->getCollapse();
+        }
+
         $this->params = $params;
     }
 }
