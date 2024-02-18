@@ -9,17 +9,12 @@ trait AggregationFormatHelperTrait
         // Transform the array and calculate totals
         $bucket = [];
         foreach ($buckets['buckets'] as $item) {
-            $currentLevel = &$bucket;
-            foreach ($item['key'] as $key => $value) {
-                if (!isset($currentLevel[$value])) {
-                    $currentLevel[$value] = [];
-                }
-                $currentLevel = &$currentLevel[$value];
+            $bucket[$item['key']]['total'] = $item['doc_count'];
+
+            foreach ($item['buckets']['buckets'] as $value) {
+                $bucket[$item['key']][$value['key']] = $value['doc_count'];
             }
-
-            $currentLevel = $item['doc_count'];
         }
-
         // Output the transformed array with totals
         return $bucket;
     }
