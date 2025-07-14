@@ -4,151 +4,74 @@ namespace Findable\Traits;
 
 use Illuminate\Support\Collection;
 
-
+/**
+ * Trait FindableParamsTrait
+ *
+ * Stores the internal state used when building an Elasticsearch query.
+ * Acts as the shared parameter container used by the Getter and Setter traits.
+ *
+ * @package Findable\Traits
+ *
+ * @property string|null $index
+ * @property object|null $model
+ * @property int $size
+ * @property int $page
+ * @property int $from
+ * @property bool $track_total_hits
+ * @property string|null $scroll
+ * @property Collection $must_query
+ * @property Collection $should_query
+ * @property Collection $must_not_query
+ * @property Collection $filter
+ * @property Collection $aggs
+ * @property Collection $sort
+ * @property array|null $script
+ * @property Collection $rescore
+ * @property string|null $collapse
+ */
 trait FindableParamsTrait
 {
+    // Core request options
+    protected ?string $index = null;
+    protected ?object $model = null;
 
-    private $index;
-    /**
-     * Sets the track_total_hits value to default of true
-     *
-     * @var bool
-     */
-    private bool $track_total_hits = true;
-    /**
-     * Sets the scroll value to default of true
-     *
-     * @var bool
-     */
-    private bool $scroll = false;
+    protected int $size = 10;
+    protected int $page = 1;
+    protected int $from = 0;
+    protected bool $track_total_hits = true;
+    protected ?string $scroll = null;
 
-    /**
-     * How many results should be returned.
-     *
-     * @var int
-     */
-    private int $size = 10;
+    // Query components
+    protected Collection $must_query;
+    protected Collection $should_query;
+    protected Collection $must_not_query;
+    protected Collection $filter;
 
-    /**
-     * Sets the from value to default of 0
-     *
-     * @var int
-     */
-    private int $from = 0;
+    // Additional features
+    protected Collection $aggs;
+    protected Collection $sort;
+    protected ?array $script = null;
+    protected Collection $rescore;
+    protected ?string $collapse = null;
 
     /**
-     * Collection storage for the Must Queries on Index for the models.
-     *
-     * @var array
+     * Initializes all collection-based fields to empty collections.
+     * Should be called in the constructor of the using class.
      */
-    private ?Collection $must_query = null;
-
-    /**
-     * Should Queries on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $should_query = null;
-
-    /**
-     * Must Not Queries on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $must_not_query = null;
-
-    /**
-     * Filters on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $filter = null;
-
-    /**
-     * Aggregations on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $aggs = null;
-
-    /**
-     * Sort on Index for the models.
-     *
-     * @var array
-     */
-    private ?Collection $sort = null;
-
-    /**
-     * Rescore on Index for the models.
-     * This is a better sorting method
-     * @var array
-     */
-    private ?Collection $rescore = null;
-    /**
-     * Sets the scripts value to default of null
-     *
-     * @var bool
-     */
-    private ?array $script = null;
-
-    private $collapse = null;
-
-    /** @return array  */
-    private function setParams()
+    protected function initializeQueryParams(): void
     {
-        $params = [];
-        $params['index'] = $this->getIndex();
-        $params['from'] = $this->getFrom();
-        $params['size'] = $this->getSize();
-        $params['track_total_hits'] = $this->getTrackTotalHits();
-        if ($this->getScroll()) {
-            $params['scroll'] = '5m';
-        }
+        $this->size = config('findable.default_size', 10);
+        $this->page = 1;
+        $this->from = 0;
+        $this->track_total_hits = config('findable.default_track_total_hits', true);
+        $this->scroll = null;
 
-        // only add must_query key to params when there are queries
-        if ($this->must_query) {
-            $params['body']['query']['bool']['must'] = $this->getMustQuery();
-        }
-
-        // only add should_query key to params when there are queries
-        if ($this->should_query) {
-            $params['body']['query']['bool']['should'] = $this->getShouldQuery();
-        }
-
-        // only add must_not_query key to params when there are queries
-        if ($this->must_not_query) {
-            $params['body']['query']['bool']['must_not'] = $this->getMustNotQuery();
-        }
-
-        // only add filter key to params when there are filters
-        if ($this->filter) {
-            $params['body']['query']['bool']['filter'] = $this->getFilter();
-        }
-
-        // only add aggregations key to params when there are aggregations
-        if ($this->aggs) {
-            $params['body']['aggs'] = $this->getAggs();
-        }
-
-        // only add aggregations key to params when there are aggregations
-        if ($this->sort) {
-            $params['body']['sort'] = $this->getSort();
-        }
-
-        // only add a script if there is a script to add.  Only one script can be added.
-        if ($this->script) {
-            $params['body']['script'] = $this->getScript();
-        }
-
-        // only add a rescore if there is a rescore to add.  Only one rescore can be added.
-        if ($this->rescore) {
-            $params['body']['rescore'] = $this->getRescore();
-        }
-
-        if ($this->collapse) {
-            $params['body']['collapse'] = $this->getCollapse();
-        }
-
-        $this->params = $params;
+        $this->must_query = collect();
+        $this->should_query = collect();
+        $this->must_not_query = collect();
+        $this->filter = collect();
+        $this->aggs = collect();
+        $this->sort = collect();
+        $this->rescore = collect();
     }
 }

@@ -5,103 +5,104 @@ namespace Findable\Traits;
 use Illuminate\Support\Collection;
 
 /**
- * Trait getterTrait
- * @package App\Elastic\Traits
- * @method string getIndex()
- * @method boolean getTrackTotalHits()
- * @method int getSize()
- * @method int getFrom()
- * @method array getMustQuery()
- * @method array getShouldQuery()
- * @method array getMustNotQuery()
- * @method array getFilter()
- * @method array getAggregation()
- * @method array getSort()
- * @method array getScript()
+ * Trait FindableGetterTrait
+ *
+ * Provides accessors for query components used in Elasticsearch queries.
+ *
+ * @package Findable\Traits
+ *
+ * @property string $index
+ * @property object $model
+ * @property int $size
+ * @property int $page
+ * @property int $from
+ * @property bool $track_total_hits
+ * @property string|null $scroll
+ * @property Collection|null $must_query
+ * @property Collection|null $should_query
+ * @property Collection|null $must_not_query
+ * @property Collection|null $filter
+ * @property Collection|null $aggs
+ * @property Collection|null $sort
+ * @property Collection|null $rescore
+ * @property string|null $collapse
+ * @property array|null $script
  *
  */
-
 trait FindableGetterTrait
 {
-
-    private function getIndex()
+    protected function getIndex(): string
     {
-        if (!is_null($this->index)) {
-            return $this->index;
-        } else {
-            return $this->model->index;
-        }
+        return $this->index ?? $this->model->index;
     }
 
-    private function getSize()
+    protected function getSize(): int
     {
         return $this->size;
     }
 
-    private function getPage()
+    protected function getPage(): int
     {
         return $this->page;
     }
 
-    private function getFrom()
+    protected function getFrom(): int
     {
         return $this->from;
     }
 
-    private function getTrackTotalHits()
+    protected function getTrackTotalHits(): bool
     {
         return $this->track_total_hits;
     }
 
-    private function getScroll()
+    protected function getScroll(): ?string
     {
         return $this->scroll;
     }
 
-    private function getMustQuery()
+    protected function getMustQuery(): array
     {
-        return $this->must_query->toArray();
+        return $this->must_query?->toArray() ?? [];
     }
 
-    private function getShouldQuery()
+    protected function getShouldQuery(): array
     {
-        return $this->should_query->toArray();
+        return $this->should_query?->toArray() ?? [];
     }
 
-    private function getMustNotQuery()
+    protected function getMustNotQuery(): array
     {
-        return $this->must_not_query->toArray();
+        return $this->must_not_query?->toArray() ?? [];
     }
 
-    private function getFilter()
+    protected function getFilter(): array
     {
-        return $this->filter->toArray();
+        return $this->filter?->toArray() ?? [];
     }
 
-    private function getAggs()
+    protected function getAggs(): array
     {
-        return $this->aggs->toArray();
+        return $this->aggs?->toArray() ?? [];
     }
 
-    private function getSort()
+    protected function getSort(): array
     {
-        return $this->sort->toArray();
+        return $this->sort?->toArray() ?? [];
     }
 
-    private function getScript()
+    protected function getScript(): ?array
     {
         return $this->script;
     }
 
-    private function getRescore()
+    protected function getRescore(): array
     {
-        return $this->rescore->toArray();
+        return $this->rescore?->toArray() ?? [];
     }
 
-    private function getCollapse()
+    protected function getCollapse(): array
     {
-        return [
-            'field' => $this->collapse
-        ];
+        return $this->collapse ? ['field' => $this->collapse] : [];
     }
 }

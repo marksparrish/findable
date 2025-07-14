@@ -4,211 +4,156 @@ namespace Findable\Traits;
 
 use Illuminate\Support\Collection;
 
+/**
+ * Trait FindableSetterTrait
+ *
+ * Handles setter methods for Elasticsearch query parameters.
+ * Used internally by the Findable engine to build query state.
+ *
+ * @package Findable\Traits
+ *
+ * @property int $size
+ * @property int $page
+ * @property int $from
+ * @property bool $track_total_hits
+ * @property string|null $scroll
+ * @property Collection $must_query
+ * @property Collection $should_query
+ * @property Collection $must_not_query
+ * @property Collection $filter
+ * @property Collection $aggs
+ * @property Collection $sort
+ * @property array|null $script
+ * @property Collection $rescore
+ * @property string|null $collapse
+ */
 trait FindableSetterTrait
 {
-    /**
-     * @param  string  $index
-     * @return $this
-     */
-    public function setIndex(string $index)
-    {
-        $this->index = $index;
-
-        return $this;
-    }
-    /**
-     * @param  int  $size
-     * @return $this
-     */
-    public function setSize(int $size)
+    public function setSize(int $size): static
     {
         $this->size = $size;
-
         return $this;
     }
 
-    /**
-     * @param  int  $from
-     * @return $this
-     */
-    public function setFrom(int $from = 0)
+    public function setPage(int $page): static
     {
-        $from = $this->size * ($this->page - 1);
+        $this->page = $page;
+        return $this;
+    }
+
+    public function setFrom(int $from): static
+    {
         $this->from = $from;
         return $this;
     }
 
-    /**
-     * @param  bool  $track_total_hits
-     * @return $this
-     */
-    public function setTrackTotalHits(bool $track_total_hits = true)
+    public function setTrackTotalHits(bool $track): static
     {
-        $this->track_total_hits = $track_total_hits;
-
+        $this->track_total_hits = $track;
         return $this;
     }
 
-    public function setScroll(bool $scroll = false)
+    public function setScroll(?string $scroll): static
     {
         $this->scroll = $scroll;
-
         return $this;
     }
 
-    public function setPage(int $page = 1)
+    public function setMustQuery(array $must): static
     {
-        $this->page = $page;
-
+        $this->must_query = collect($must);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setMustQuery($queries)
+    public function setShouldQuery(array $should): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->must_query = $this->must_query ?: new Collection();
-        foreach ($queries as $query) {
-            $this->must_query->push([
-                array_key_first($query) => $query[array_key_first($query)]
-            ]);
-        }
+        $this->should_query = collect($should);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setShouldQuery($queries): self
+    public function setMustNotQuery(array $mustNot): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->should_query = $this->should_query ?: new Collection();
-        foreach ($queries as $query) {
-            $this->should_query->push([
-                array_key_first($query) => $query[(array_key_first($query))]
-            ]);
-        }
+        $this->must_not_query = collect($mustNot);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setMustNotQuery($queries): self
+    public function setFilter(array $filter): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->must_not_query = $this->must_not_query ?: new Collection();
-        foreach ($queries as $query) {
-            $this->must_not_query->push([
-                array_key_first($query) => $query[(array_key_first($query))]
-            ]);
-        }
+        $this->filter = collect($filter);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setFilter($queries): self
+    public function setAggs(array $aggs): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->filter = $this->filter ?: new Collection();
-        foreach ($queries as $query) {
-            $this->filter->push([
-                array_key_first($query) => $query[(array_key_first($query))]
-            ]);
-        }
+        $this->aggs = collect($aggs);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setAggs($queries)
+    public function setSort(array $sort): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->aggs = $this->aggs ?: new Collection();
-        foreach ($queries as $query) {
-            $this->aggs->put(array_key_first($query), $query[(array_key_first($query))]);
-        }
+        $this->sort = collect($sort);
         return $this;
     }
 
-    /**
-     * @param  mixed  $key
-     * @param  mixed  $array
-     */
-    public function setSort($queries)
+    public function setScript(?array $script): static
     {
-        $queries = is_array($queries) ? $queries : [$queries];
-        $this->sort = $this->sort ?: new Collection();
-        foreach ($queries as $query) {
-            $this->sort->push([
-                array_key_first($query) => $query[(array_key_first($query))]
-            ]);
-        }
+        $this->script = $script;
         return $this;
     }
 
-    public function setCollapse($field)
+    public function setRescore(array $rescore): static
+    {
+        $this->rescore = collect($rescore);
+        return $this;
+    }
+
+    public function setCollapse(string $field): static
     {
         $this->collapse = $field;
         return $this;
     }
 
-    public function setRescore($array)
+    /**
+     * Dynamically assign a property based on a key-value pair.
+     *
+     * This method safely assigns scalar or collection-based query parameters.
+     * For keys that are internally expected to be Laravel Collections,
+     * the input array will be wrapped in a Collection to ensure consistency.
+     *
+     * Only keys listed in $collectionKeys will be wrapped — this avoids
+     * unintentionally converting scalars like 'size' or complex objects like 'script'.
+     */
+    public function setParam(string $key, mixed $value): static
     {
-        $this->rescore = $this->rescore ?: new Collection();
-        $this->rescore->push($array);
+        // Keys that should be cast to Laravel Collections
+        $collectionKeys = [
+            'must_query',      // array of "must" filters
+            'should_query',    // array of "should" filters
+            'must_not_query',  // array of "must not" filters
+            'filter',          // array of additional filters
+            'aggs',            // aggregation config
+            'sort',            // sorting fields
+            'rescore',         // optional rescore clauses
+        ];
+
+        if (in_array($key, $collectionKeys, true) && is_array($value)) {
+            $this->{$key} = collect($value);
+        } else {
+            $this->{$key} = $value;
+        }
+
         return $this;
     }
 
-    private function setResults($results)
+    /**
+     * Bulk-assign multiple values using setParam internally.
+     */
+    public function setParams(array $params): static
     {
-        $this->results = $results;
-    }
-
-    private function setRaw()
-    {
-        $this->raw = $this->results->asArray();
-    }
-
-    private function setTotalHits()
-    {
-        $this->total_hits = $this->results['hits']['total']['value'];
-    }
-
-    /** @return mixed  */
-    private function setModels()
-    {
-        if ($this->size) {
-            $documents = collect($this->raw['hits']['hits'])->pluck('_source');
-            // $modelClass = get_class($this->model);
-
-            $this->models = collect($documents)->map(function ($source) {
-                $model = new $this->model;
-                // creates model attibutes using the model's fillable array
-                // you can limit the attributes that are created to those in the fillable array
-                return $model->fill($source);
-            });
-        } else {
-            $this->models = collect([]);
+        foreach ($params as $key => $value) {
+            $this->setParam($key, $value);
         }
-    }
 
-    private function setAggregations()
-    {
-        if (!isset($this->raw['aggregations'])) {
-            $this->aggregations = null;
-        } else {
-            $this->aggregations = collect($this->raw['aggregations']);
-        }
+        return $this;
     }
 }

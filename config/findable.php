@@ -9,5 +9,9 @@ return [
     'port' => env('ELASTIC_PORT', 9200),
     'user' => env('ELASTIC_USER', ''),
     'password' => env('ELASTIC_PASSWORD', ''),
-    'ca' => env('ELASTIC_CA', null),
+    'ca' => env('ELASTIC_CA'),
+
+    // Optional defaults for query engine
+    'default_size' => env('FINDABLE_DEFAULT_SIZE', 10),
+    'default_track_total_hits' => env('FINDABLE_DEFAULT_TRACK_TOTAL_HITS', true),
 ];

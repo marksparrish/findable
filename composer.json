@@ -1,7 +1,7 @@
 {
-    "name": "pip/findable",
-    "description": "This is a package for Laravel that will allow you to use Elasticsearch as database for your models.",
-    "type": "library",
+    "name": "pipcommunications/findable",
+    "description": "Laravel package for using Elasticsearch as a query engine for Eloquent-like models.",
+    "type": "laravel-package",
     "license": "MIT",
     "authors": [
         {
@@ -42,6 +42,13 @@
             }
         }
     },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "keywords": ["laravel", "elasticsearch", "search", "eloquent", "findable"],
+    "homepage": "https://github.com/pipcommunications/findable",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "config": {
         "allow-plugins": {
             "php-http/discovery": true
