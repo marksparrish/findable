@@ -33,8 +33,6 @@ trait FindableParamsTrait
 {
     // Core request options
     protected ?string $index = null;
-    protected ?object $model = null;
-
     protected int $size = 10;
     protected int $page = 1;
     protected int $from = 0;
