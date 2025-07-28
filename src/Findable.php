@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @package Findable
  *
- * @method static FindableEngine for(string $modelClass)
+ * @method static FindableEngine (string $modelClass)
  */
 class Findable extends Facade
 {

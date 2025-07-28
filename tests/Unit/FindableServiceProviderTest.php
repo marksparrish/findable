@@ -2,28 +2,15 @@
 
 namespace Tests\Unit;
 
-use Findable\FindableServiceProvider;
-use Orchestra\Testbench\TestCase;
+use Tests\TestCase;
+use Elastic\Elasticsearch\Client;
 
 class FindableServiceProviderTest extends TestCase
 {
-    public function testClientCreation()
+    /** @test */
+    public function test_client_can_be_resolved()
     {
-        // Mock the environment variables or configuration if necessary
-
-        // Retrieve the client from the service container
-        $client = $this->app->make('findable.client');
-
-        $this->assertNotNull($client);
-        // Add more assertions to validate the client instance
-    }
-
-    public function testClientCreationFailure()
-    {
-        // Mock a scenario where the client creation should fail
-        // For example, set invalid configuration values
-
-        // Expectation: an error should be logged, or a specific behavior should occur
-        // You can use Laravel's built-in log mocking to assert that an error was logged
+        $client = app('elasticsearch.client');
+        $this->assertInstanceOf(Client::class, $client);
     }
 }

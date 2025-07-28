@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php"
+         colors="true"
+         verbose="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true">
+    <testsuites>
+        <testsuite name="Findable Test Suite">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="DB_CONNECTION" value="testing"/>
+        <env name="ELASTIC_SCHEME" value="http"/>
+        <env name="ELASTIC_HOST" value="localhost"/>
+        <env name="ELASTIC_PORT" value="9200"/>
+        <env name="ELASTIC_USER" value=""/>
+        <env name="ELASTIC_PASSWORD" value=""/>
+    </php>
+</phpunit>
