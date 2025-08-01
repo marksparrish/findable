@@ -208,8 +208,50 @@ class FindableEngine
 
         $result = $this->search();
 
+        $items = collect($result->hits)->map(function ($hit) {
+            if (!is_object($this->model)) {
+                return $hit;
+            }
+            
+            $model = clone $this->model;
+            $model->fill($hit['_source']);
+            $model->setAttribute($model->getKeyName(), $hit['_id']);
+            
+            if (isset($hit['_score'])) {
+                $model->documentScore = $hit['_score'];
+            }
+            
+            return $model;
+        });
+
+        // Load relationships if any are specified
+        if (!empty($this->relations) && is_object($this->model)) {
+            $ids = $items->pluck($this->model->getKeyName())->toArray();
+            
+            $modelClass = get_class($this->model);
+            $dbModels = $modelClass::with($this->relations)
+                ->whereIn($this->model->getKeyName(), $ids)
+                ->get()
+                ->keyBy($this->model->getKeyName());
+            
+            // Apply skipMissingModels logic
+            $items = $items->filter(function ($model) use ($dbModels) {
+                $id = $model->getKey();
+                return !$this->skipMissingModels || isset($dbModels[$id]);
+            })->map(function ($model) use ($dbModels) {
+                $id = $model->getKey();
+                if (isset($dbModels[$id])) {
+                    if (isset($model->documentScore)) {
+                        $dbModels[$id]->documentScore = $model->documentScore;
+                    }
+                    return $dbModels[$id];
+                }
+                return $model;
+            });
+        }
+
         $paginator = new FindablePaginationClass(
-            items: collect($result->hits),
+            items: $items,
             total: $result->total,
             perPage: $size,
             currentPage: $page
