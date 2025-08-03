@@ -4,7 +4,7 @@ namespace Findable\DTOs;
 
 class SearchResultDTO
 {
-    public readonly array $formattedAggregations;
+    public readonly array $formatted_aggregations;
 
     public function __construct(
         public readonly array $hits,
@@ -13,7 +13,7 @@ class SearchResultDTO
         public readonly array $raw,
         public readonly array $params,
     ) {
-        $this->formattedAggregations = !empty($raw_aggregations)
+        $this->formatted_aggregations = !empty($raw_aggregations)
             ? (new \Findable\Formatters\AggregationFormatter())->format($raw_aggregations)
             : [];
     }

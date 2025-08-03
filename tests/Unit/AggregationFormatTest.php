@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Findable;
+namespace Tests\Unit;
 
 use Tests\TestCase;
 use Findable\DTOs\SearchResultDTO;
@@ -81,7 +81,7 @@ class AggregationFormatTest extends TestCase
 
         $this->assertEquals(
             55951,
-            $dto->formattedAggregations['TotalVoterCount']
+            $dto->formatted_aggregations['TotalVoterCount']
         );
     }
 
@@ -103,7 +103,7 @@ class AggregationFormatTest extends TestCase
 
         $this->assertEquals(
             $expected,
-            $dto->formattedAggregations['GenderCounts']
+            $dto->formatted_aggregations['GenderCounts']
         );
     }
 
@@ -140,7 +140,7 @@ class AggregationFormatTest extends TestCase
 
         $this->assertEquals(
             $expected,
-            $dto->formattedAggregations['TagPartyCounts']
+            $dto->formatted_aggregations['TagPartyCounts']
         );
     }
 }
