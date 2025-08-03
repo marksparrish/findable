@@ -3,6 +3,7 @@
 namespace Findable;
 
 use Illuminate\Pagination\LengthAwarePaginator;
+use Findable\Formatters\AggregationFormatter;
 
 /**
  * Class FindablePaginationClass
@@ -70,4 +71,13 @@ class FindablePaginationClass extends LengthAwarePaginator
     {
         return $this->items->all();
     }
+
+    /**
+     * Get formatted aggregations
+     */
+    public function formattedAggregations(): array
+    {
+        return (new AggregationFormatter())->format($this->aggregations);
+    }
+
 }
