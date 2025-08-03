@@ -4,9 +4,6 @@ namespace Findable\Formatters;
 
 class AggregationFormatter
 {
-    /**
-     * Format the entire aggregations response
-     */
     public function format(array $aggregations): array
     {
         $formatted = [];
@@ -18,14 +15,11 @@ class AggregationFormatter
         return $formatted;
     }
 
-    /**
-     * Format a single aggregation based on its type
-     */
     protected function formatSingleAggregation(array $aggregation): mixed
     {
         // Simple metric aggregation (direct value)
         if (isset($aggregation['value'])) {
-            return $this->formatMetricAggregation($aggregation);
+            return $aggregation['value'];
         }
 
         // Bucket aggregation
@@ -33,39 +27,25 @@ class AggregationFormatter
             return $this->formatBucketAggregation($aggregation);
         }
 
-        // Nested sub-aggregations
-        if (is_array($aggregation) && !isset($aggregation['value'], $aggregation['buckets'])) {
-            return $this->format($aggregation);
-        }
-
         return null;
     }
 
-    /**
-     * Format bucket aggregations into a simplified array structure
-     */
     protected function formatBucketAggregation(array $aggregation): array
     {
-        return array_map(function ($bucket) {
-            $result = [
-                'key' => $bucket['key'],
-                'count' => $bucket['doc_count']
-            ];
-
-            // Handle nested buckets if they exist
+        $result = [];
+        foreach ($aggregation['buckets'] as $bucket) {
             if (isset($bucket['buckets'])) {
-                $result['nested'] = $this->formatBucketAggregation($bucket);
+                // Handle nested buckets
+                $result[] = [
+                    'key' => $bucket['key'],
+                    'total' => $bucket['doc_count'],
+                    'buckets' => $bucket['buckets']['buckets']
+                ];
+            } else {
+                // Simple key-value bucket
+                $result[$bucket['key']] = $bucket['doc_count'];
             }
-
-            return $result;
-        }, $aggregation['buckets']);
-    }
-
-    /**
-     * Format metric aggregations (like sum, avg, max, etc.)
-     */
-    protected function formatMetricAggregation(array $aggregation): int|float
-    {
-        return $aggregation['value'];
+        }
+        return $result;
     }
 }

@@ -80,4 +80,8 @@ class FindablePaginationClass extends LengthAwarePaginator
         return (new AggregationFormatter())->format($this->aggregations);
     }
 
+    public function setAggregations(array $aggregations): void
+    {
+        $this->aggregations = $aggregations;
+    }
 }

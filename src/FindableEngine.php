@@ -3,11 +3,12 @@
 namespace Findable;
 
 use Elastic\Elasticsearch\Client;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Findable\Traits\FindableParamsTrait;
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
-use Findable\DTOs\SearchResult;
+use Findable\DTOs\SearchResultDTO;
 use Findable\Exceptions\FindableException;
 
 /**
@@ -70,9 +71,10 @@ class FindableEngine
     /**
      * Initialize with an optional model or manually configured index.
      *
+     * @param Client|null $client
      * @param object|string|null $model
      */
-    public function __construct(protected object|string|null $model = null)
+    public function __construct(?Client $client = null, protected object|string|null $model = null)
     {
         $this->initializeQueryParams();
 
@@ -80,8 +82,10 @@ class FindableEngine
             $this->index = $this->model->index;
         }
 
-        $this->client = App::make('elasticsearch.client');
+        $this->client = $client ?? App::make('elasticsearch.client');
     }
+    
+    // ... other methods remain the same ...
 
     /**
      * Manually set the target Elasticsearch index.
@@ -155,14 +159,9 @@ class FindableEngine
         return $body;
     }
 
-    /**
-     * Execute a raw search against Elasticsearch and return structured results.
-     *
-     * @return SearchResult
-     * @throws \RuntimeException
-     * @throws \ErrorException|\Throwable
-     */
-    public function search(): SearchResult
+    // ... other methods remain the same ...
+
+    public function search(): SearchResultDTO
     {
         if (!$this->getIndex()) {
             throw new FindableException("FindableEngine requires an index to be set before querying.");
@@ -170,7 +169,7 @@ class FindableEngine
 
         $params = [
             'index' => $this->getIndex(),
-            'body'  => $this->buildRequestBody(),
+            'body' => $this->buildRequestBody(),
         ];
 
         if ($scroll = $this->getScroll()) {
@@ -180,24 +179,22 @@ class FindableEngine
         $response = $this->client->search($params);
         $raw = $response->asArray();
 
-        return new SearchResult(
-            hits: $raw['hits']['hits'] ?? [],
+        $items = $this->hydrateHits($raw['hits']['hits'] ?? []);
+        if (!empty($this->relations)) {
+            $items = $this->loadRelations($items);
+        }
+
+        return new SearchResultDTO(
+            hits: $items->all(),
             total: is_array($raw['hits']['total'] ?? null)
                 ? $raw['hits']['total']['value']
                 : ($raw['hits']['total'] ?? 0),
-            aggregations: $raw['aggregations'] ?? [],
+            raw_aggregations: $raw['aggregations'] ?? [],
             raw: $raw,
             params: $params,
         );
     }
 
-    /**
-     * Run the search and return paginated results using Laravel's paginator.
-     *
-     * @return FindablePaginationClass
-     * @throws \RuntimeException
-     * @throws \ErrorException|\Throwable
-     */
     public function paginate(): FindablePaginationClass
     {
         $page = $this->getPage();
@@ -205,53 +202,10 @@ class FindableEngine
         $from = ($page - 1) * $size;
 
         $this->setFrom($from);
-
         $result = $this->search();
 
-        $items = collect($result->hits)->map(function ($hit) {
-            if (!is_object($this->model)) {
-                return $hit;
-            }
-            
-            $model = clone $this->model;
-            $model->fill($hit['_source']);
-            $model->setAttribute($model->getKeyName(), $hit['_id']);
-            
-            if (isset($hit['_score'])) {
-                $model->documentScore = $hit['_score'];
-            }
-            
-            return $model;
-        });
-
-        // Load relationships if any are specified
-        if (!empty($this->relations) && is_object($this->model)) {
-            $ids = $items->pluck($this->model->getKeyName())->toArray();
-            
-            $modelClass = get_class($this->model);
-            $dbModels = $modelClass::with($this->relations)
-                ->whereIn($this->model->getKeyName(), $ids)
-                ->get()
-                ->keyBy($this->model->getKeyName());
-            
-            // Apply skipMissingModels logic
-            $items = $items->filter(function ($model) use ($dbModels) {
-                $id = $model->getKey();
-                return !$this->skipMissingModels || isset($dbModels[$id]);
-            })->map(function ($model) use ($dbModels) {
-                $id = $model->getKey();
-                if (isset($dbModels[$id])) {
-                    if (isset($model->documentScore)) {
-                        $dbModels[$id]->documentScore = $model->documentScore;
-                    }
-                    return $dbModels[$id];
-                }
-                return $model;
-            });
-        }
-
         $paginator = new FindablePaginationClass(
-            items: $items,
+            items: collect($result->hits),
             total: $result->total,
             perPage: $size,
             currentPage: $page
@@ -259,8 +213,60 @@ class FindableEngine
 
         $paginator->raw = $result->raw;
         $paginator->params = $result->params;
-        $paginator->aggregations = $result->aggregations;
+        $paginator->setAggregations($result->raw_aggregations);
 
         return $paginator;
+    }
+
+    /**
+     * Hydrate Elasticsearch hits into model instances
+     */
+    protected function hydrateHits(array $hits): Collection
+    {
+        return collect($hits)->map(function ($hit) {
+            if (!is_object($this->model)) {
+                return $hit;
+            }
+
+            $model = clone $this->model;
+            $model->fill($hit['_source']);
+            $model->setAttribute($model->getKeyName(), $hit['_id']);
+
+            if (isset($hit['_score'])) {
+                $model->documentScore = $hit['_score'];
+            }
+
+            return $model;
+        });
+    }
+
+    /**
+     * Load model relationships for a collection of hits
+     */
+    protected function loadRelations(Collection $items): Collection
+    {
+        if (empty($this->relations) || !is_object($this->model)) {
+            return $items;
+        }
+
+        $ids = $items->pluck($this->model->getKeyName())->toArray();
+        $modelClass = get_class($this->model);
+        $dbModels = $modelClass::with($this->relations)
+            ->whereIn($this->model->getKeyName(), $ids)
+            ->get()
+            ->keyBy($this->model->getKeyName());
+
+        return $items->filter(function ($model) use ($dbModels) {
+            return !$this->skipMissingModels || isset($dbModels[$model->getKey()]);
+        })->map(function ($model) use ($dbModels) {
+            $id = $model->getKey();
+            if (isset($dbModels[$id])) {
+                if (isset($model->documentScore)) {
+                    $dbModels[$id]->documentScore = $model->documentScore;
+                }
+                return $dbModels[$id];
+            }
+            return $model;
+        });
     }
 }

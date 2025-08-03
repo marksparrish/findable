@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Findable;
 
 use PHPUnit\Framework\TestCase;
-use Findable\DTOs\SearchResult;
+use Findable\DTOs\SearchResultDTO;
 
 class SearchResultTest extends TestCase
 {
@@ -12,21 +12,21 @@ class SearchResultTest extends TestCase
     {
         $hits = [['id' => 1], ['id' => 2]];
         $total = 2;
-        $aggregations = ['genders' => ['buckets' => []]];
+        $raw_aggregations = ['genders' => ['buckets' => []]];
         $raw = ['hits' => ['total' => ['value' => 2]]];
         $params = ['index' => 'people'];
 
-        $dto = new SearchResult(
+        $dto = new SearchResultDTO(
             hits: $hits,
             total: $total,
-            aggregations: $aggregations,
+            raw_aggregations: $raw_aggregations,
             raw: $raw,
             params: $params
         );
 
         $this->assertEquals($hits, $dto->hits);
         $this->assertEquals($total, $dto->total);
-        $this->assertEquals($aggregations, $dto->aggregations);
+        $this->assertEquals($raw_aggregations, $dto->raw_aggregations);
         $this->assertEquals($raw, $dto->raw);
         $this->assertEquals($params, $dto->params);
     }
