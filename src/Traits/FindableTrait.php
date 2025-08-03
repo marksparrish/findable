@@ -21,6 +21,6 @@ trait FindableTrait
      */
     public static function finder(): FindableEngine
     {
-        return new FindableEngine(new static());
+        return new FindableEngine(null, new static());
     }
 }
