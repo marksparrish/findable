@@ -10,7 +10,7 @@ namespace Findable\Traits;
  *
  * @package Findable\Traits
  */
-trait AggregationFormatHelper
+trait BuildsElasticsearchAggregationsTrait
 {
     /**
      * Wrap a given field name in a standard "terms" aggregation format.
