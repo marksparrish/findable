@@ -85,7 +85,15 @@ trait FindableSetterTrait
 
     public function setAggs(array $aggs): static
     {
-        $this->aggs = collect($aggs);
+        if (array_is_list($aggs)) {
+            $merged = [];
+            foreach ($aggs as $agg) {
+                $merged = array_merge($merged, $agg);
+            }
+            $this->aggs = collect($merged);
+        } else {
+            $this->aggs = collect($aggs);
+        }
         return $this;
     }
 
