@@ -159,8 +159,6 @@ class FindableEngine
         return $body;
     }
 
-    // ... other methods remain the same ...
-
     public function search(): SearchResultDTO
     {
         if (!$this->getIndex()) {
@@ -217,6 +215,39 @@ class FindableEngine
 
         return $paginator;
     }
+    public function updateByQuery(array $overrides = []): array
+    {
+        if (!$this->getIndex()) {
+            throw new \Findable\Exceptions\FindableException(
+                "FindableEngine requires an index to be set before querying."
+            );
+        }
+
+        // Build params using the same body builder used for search()
+        $params = array_merge([
+            'index' => $this->getIndex(),
+            'body'  => $this->buildRequestBody(),
+        ], $overrides);
+
+        $response = $this->client->updateByQuery($params);
+
+        // Normalize response to array regardless of underlying client type
+        if (is_array($response)) {
+            return $response;
+        }
+
+        if (is_object($response)) {
+            if (method_exists($response, 'asArray')) {
+                return $response->asArray();
+            }
+            if (method_exists($response, 'toArray')) {
+                return $response->toArray();
+            }
+        }
+
+        return (array) $response;
+    }
+
 
     /**
      * Hydrate Elasticsearch hits into model instances
