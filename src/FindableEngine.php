@@ -222,30 +222,38 @@ class FindableEngine
                 "FindableEngine requires an index to be set before querying."
             );
         }
+        $body = $this->buildRequestBody();
 
-        // Build params using the same body builder used for search()
+        // Remove fields not supported by _update_by_query
+        unset(
+            $body['from'],
+            $body['size'],
+            $body['sort'],
+            $body['aggs'],
+            $body['rescore'],
+            $body['collapse'],
+            $body['track_total_hits']
+        );
+
+        // If no query was built, default to match_all to avoid empty body.query
+        if (empty($body['query'])) {
+            $body['query'] = ['match_all' => (object)[]];
+        }
+
         $params = array_merge([
             'index' => $this->getIndex(),
-            'body'  => $this->buildRequestBody(),
+            'body'  => $body,
+            // Useful defaults/overrides for update_by_query:
+            // 'conflicts' => 'proceed',
+            // 'refresh'   => true,
+            // 'max_docs'  => 10000,          // limit total docs to update
+            // 'scroll_size' => 1000,         // per-batch size
         ], $overrides);
 
         $response = $this->client->updateByQuery($params);
 
-        // Normalize response to array regardless of underlying client type
-        if (is_array($response)) {
-            return $response;
-        }
-
-        if (is_object($response)) {
-            if (method_exists($response, 'asArray')) {
-                return $response->asArray();
-            }
-            if (method_exists($response, 'toArray')) {
-                return $response->toArray();
-            }
-        }
-
-        return (array) $response;
+        // Keep normalization simple if your client already returns arrays
+        return is_array($response) ? $response : (array) $response;
     }
 
 
