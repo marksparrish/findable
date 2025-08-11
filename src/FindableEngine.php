@@ -256,6 +256,25 @@ class FindableEngine
         return is_array($response) ? $response : (array) $response;
     }
 
+    /**
+     * Convenience method to return an empty SearchResultDTO.
+     *
+     * Example:
+     *   Model::findable()->emptySearchResult();
+     *
+     * @param array $params Optional metadata/params to include in the result.
+     * @return SearchResultDTO
+     */
+    public function emptySearchResult(array $params = []): SearchResultDTO
+    {
+        return new SearchResultDTO(
+            hits: [],
+            total: 0,
+            raw_aggregations: [],
+            raw: [],
+            params: $params
+        );
+    }
 
     /**
      * Hydrate Elasticsearch hits into model instances
