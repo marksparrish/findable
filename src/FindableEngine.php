@@ -2,6 +2,8 @@
 
 namespace Findable;
 
+use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
+use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -84,7 +86,7 @@ class FindableEngine
 
         $this->client = $client ?? App::make('elasticsearch.client');
     }
-    
+
     // ... other methods remain the same ...
 
     /**
@@ -326,5 +328,30 @@ class FindableEngine
             }
             return $model;
         });
+    }
+
+
+    /**
+     * Stream all hits using Elasticsearch scroll + iterators.
+     *
+     * Best for exports, reindexing, or batch jobs. Not for UI pagination.
+     *
+     * @param int $size   Batch size per scroll request
+     * @param string $scroll Keepalive duration (e.g. "2m")
+     * @return SearchHitIterator
+     */
+    public function stream(int $size = 500, string $scroll = '2m'): SearchHitIterator
+    {
+        if (!$this->getIndex()) {
+            throw new FindableException("FindableEngine requires an index to be set before streaming.");
+        }
+
+        $params = $this->buildRequestBody();
+        // override the size and scroll
+        $params['size'] = $size;
+        $params['scroll'] = $scroll;
+
+        $pages = new SearchResponseIterator($this->client, $params);
+        return new SearchHitIterator($pages);
     }
 }
