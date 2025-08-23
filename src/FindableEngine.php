@@ -5,8 +5,6 @@ namespace Findable;
 use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
 use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
 use Elastic\Elasticsearch\Client;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\App;
 use Findable\Traits\FindableParamsTrait;
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
@@ -73,10 +71,10 @@ class FindableEngine
     /**
      * Initialize with an optional model or manually configured index.
      *
-     * @param Client|null $client
+     * @param Client $client
      * @param object|string|null $model
      */
-    public function __construct(?Client $client = null, protected object|string|null $model = null)
+    public function __construct(Client $client, protected object|string|null $model = null)
     {
         $this->initializeQueryParams();
 
@@ -84,10 +82,8 @@ class FindableEngine
             $this->index = $this->model->index;
         }
 
-        $this->client = $client ?? App::make('elasticsearch.client');
+        $this->client = $client;
     }
-
-    // ... other methods remain the same ...
 
     /**
      * Manually set the target Elasticsearch index.
@@ -180,12 +176,9 @@ class FindableEngine
         $raw = $response->asArray();
 
         $items = $this->hydrateHits($raw['hits']['hits'] ?? []);
-        if (!empty($this->relations)) {
-            $items = $this->loadRelations($items);
-        }
 
         return new SearchResultDTO(
-            hits: $items->all(),
+            hits: $items,
             total: is_array($raw['hits']['total'] ?? null)
                 ? $raw['hits']['total']['value']
                 : ($raw['hits']['total'] ?? 0),
@@ -197,7 +190,8 @@ class FindableEngine
 
     public function paginate(): FindablePaginationClass
     {
-        $page = $this->getPage();
+        // need to generate the from value
+        $page = $this->getPage() || 1;
         $size = $this->getSize();
         $from = ($page - 1) * $size;
 
@@ -205,18 +199,24 @@ class FindableEngine
         $result = $this->search();
 
         $paginator = new FindablePaginationClass(
-            items: collect($result->hits),
+            items: $result->hits,
             total: $result->total,
             perPage: $size,
             currentPage: $page
         );
 
+        // add to the paginator the raw response and the params and the aggregations if they exist
         $paginator->raw = $result->raw;
         $paginator->params = $result->params;
         $paginator->setAggregations($result->raw_aggregations);
 
         return $paginator;
     }
+
+    // this updates all the documents that match the filter with a single value
+    // e.g. update all documents that match the term "test" with the value "test2"
+    // a script is then used to update the document
+    // 
     public function updateByQuery(array $overrides = []): array
     {
         if (!$this->getIndex()) {
@@ -281,9 +281,9 @@ class FindableEngine
     /**
      * Hydrate Elasticsearch hits into model instances
      */
-    protected function hydrateHits(array $hits): Collection
+    protected function hydrateHits(array $hits): array
     {
-        return collect($hits)->map(function ($hit) {
+        return array_map(function ($hit) {
             if (!is_object($this->model)) {
                 return $hit;
             }
@@ -297,39 +297,8 @@ class FindableEngine
             }
 
             return $model;
-        });
+        }, $hits);
     }
-
-    /**
-     * Load model relationships for a collection of hits
-     */
-    protected function loadRelations(Collection $items): Collection
-    {
-        if (empty($this->relations) || !is_object($this->model)) {
-            return $items;
-        }
-
-        $ids = $items->pluck($this->model->getKeyName())->toArray();
-        $modelClass = get_class($this->model);
-        $dbModels = $modelClass::with($this->relations)
-            ->whereIn($this->model->getKeyName(), $ids)
-            ->get()
-            ->keyBy($this->model->getKeyName());
-
-        return $items->filter(function ($model) use ($dbModels) {
-            return !$this->skipMissingModels || isset($dbModels[$model->getKey()]);
-        })->map(function ($model) use ($dbModels) {
-            $id = $model->getKey();
-            if (isset($dbModels[$id])) {
-                if (isset($model->documentScore)) {
-                    $dbModels[$id]->documentScore = $model->documentScore;
-                }
-                return $dbModels[$id];
-            }
-            return $model;
-        });
-    }
-
 
     /**
      * Stream all hits using Elasticsearch scroll + iterators.
