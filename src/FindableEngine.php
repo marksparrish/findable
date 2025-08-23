@@ -5,6 +5,8 @@ namespace Findable;
 use Elastic\Elasticsearch\Helper\Iterators\SearchResponseIterator;
 use Elastic\Elasticsearch\Helper\Iterators\SearchHitIterator;
 use Elastic\Elasticsearch\Client;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Findable\Traits\FindableParamsTrait;
 use Findable\Traits\FindableGetterTrait;
 use Findable\Traits\FindableSetterTrait;
@@ -71,10 +73,10 @@ class FindableEngine
     /**
      * Initialize with an optional model or manually configured index.
      *
-     * @param Client $client
+     * @param Client|null $client
      * @param object|string|null $model
      */
-    public function __construct(Client $client, protected object|string|null $model = null)
+    public function __construct(?Client $client = null, protected object|string|null $model = null)
     {
         $this->initializeQueryParams();
 
@@ -82,7 +84,7 @@ class FindableEngine
             $this->index = $this->model->index;
         }
 
-        $this->client = $client;
+        $this->client = $client ?? App::make('elasticsearch.client');
     }
 
     /**
@@ -178,7 +180,7 @@ class FindableEngine
         $items = $this->hydrateHits($raw['hits']['hits'] ?? []);
 
         return new SearchResultDTO(
-            hits: $items,
+            hits: $items->all(),
             total: is_array($raw['hits']['total'] ?? null)
                 ? $raw['hits']['total']['value']
                 : ($raw['hits']['total'] ?? 0),
@@ -190,8 +192,7 @@ class FindableEngine
 
     public function paginate(): FindablePaginationClass
     {
-        // need to generate the from value
-        $page = $this->getPage() || 1;
+        $page = $this->getPage();
         $size = $this->getSize();
         $from = ($page - 1) * $size;
 
@@ -199,24 +200,18 @@ class FindableEngine
         $result = $this->search();
 
         $paginator = new FindablePaginationClass(
-            items: $result->hits,
+            items: collect($result->hits),
             total: $result->total,
             perPage: $size,
             currentPage: $page
         );
 
-        // add to the paginator the raw response and the params and the aggregations if they exist
         $paginator->raw = $result->raw;
         $paginator->params = $result->params;
         $paginator->setAggregations($result->raw_aggregations);
 
         return $paginator;
     }
-
-    // this updates all the documents that match the filter with a single value
-    // e.g. update all documents that match the term "test" with the value "test2"
-    // a script is then used to update the document
-    // 
     public function updateByQuery(array $overrides = []): array
     {
         if (!$this->getIndex()) {
@@ -281,9 +276,9 @@ class FindableEngine
     /**
      * Hydrate Elasticsearch hits into model instances
      */
-    protected function hydrateHits(array $hits): array
+    protected function hydrateHits(array $hits): Collection
     {
-        return array_map(function ($hit) {
+        return collect($hits)->map(function ($hit) {
             if (!is_object($this->model)) {
                 return $hit;
             }
@@ -297,7 +292,7 @@ class FindableEngine
             }
 
             return $model;
-        }, $hits);
+        });
     }
 
     /**
